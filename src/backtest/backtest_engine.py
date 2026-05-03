@@ -236,7 +236,13 @@ class BacktestEngine:
             weight_signals.index = pd.to_datetime(weight_signals.index)
         
         # Normalize weights to sum to 1 per row
-        weight_signals = weight_signals.div(weight_signals.sum(axis=1), axis=0).fillna(0)
+        #weight_signals = weight_signals.div(weight_signals.sum(axis=1), axis=0).fillna(0)
+
+        # Thay 0 bằng np.nan để tránh lỗi chia cho 0
+        weight_signals = weight_signals.div(weight_signals.sum(axis=1).replace(0, np.nan), axis=0).fillna(0)
+
+    # (Tùy chọn) Đảm bảo dữ liệu là kiểu float để tránh các lỗi tính toán ngầm định
+        weight_signals = weight_signals.astype(float)
         tw = weight_signals.sort_index()
 
         strategy = bt.Strategy(

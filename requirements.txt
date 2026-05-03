@@ -42,6 +42,7 @@ pathlib>=1.0.1
 typing-extensions>=4.8.0
 lxml>=4.9.0  # For pandas.read_html
 finnhub-python>=2.4.19
+tzlocal>=5.0.0
 
 # Development and testing
 pytest>=7.4.0

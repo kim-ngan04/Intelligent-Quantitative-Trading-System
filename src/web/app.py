@@ -908,7 +908,7 @@ def run_backtest_demo(strategy_type: str, start_date, end_date, initial_capital:
         config = BacktestConfig(
             start_date=start_date.strftime('%Y-%m-%d'),
             end_date=end_date.strftime('%Y-%m-%d'),
-            rebalance_freq='Q',
+            rebalance_freq='QE',
             initial_capital=initial_capital,
             benchmark_tickers=['SPY', 'QQQ']
         )
@@ -939,7 +939,7 @@ def _generate_equal_weight_signals(price_data: pd.DataFrame, tickers: list) -> p
     quarterly_dates = pd.date_range(
         start=pd.Timestamp(dates.min()),
         end=pd.Timestamp(dates.max()),
-        freq='Q'
+        freq='QE'
     )
 
     # Create weight signals (equal weight for all tickers)
@@ -965,7 +965,7 @@ def _generate_market_cap_weight_signals(price_data: pd.DataFrame, tickers: list)
     quarterly_dates = pd.date_range(
         start=pd.Timestamp(dates.min()),
         end=pd.Timestamp(dates.max()),
-        freq='Q'
+        freq='QE'
     )
 
     # Simulate market cap weights (use price as proxy)
@@ -1003,7 +1003,7 @@ def _generate_ml_weight_signals(price_data: pd.DataFrame, tickers: list,
     quarterly_dates = pd.date_range(
         start=pd.Timestamp(dates.min()),
         end=pd.Timestamp(dates.max()),
-        freq='Q'
+        freq='QE'
     )
 
     weight_signals = pd.DataFrame(index=quarterly_dates, columns=tickers)
