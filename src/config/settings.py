@@ -166,7 +166,7 @@ class FinRLSettings(BaseSettings):
     logging: LoggingSettings = LoggingSettings()
 
     class Config:
-        env_file = ".env"
+        env_file = str(Path(__file__).parent.parent.parent / ".env")
         env_file_encoding = "utf-8"
         case_sensitive = False
         extra = "ignore"  # 忽略未定义的环境变量

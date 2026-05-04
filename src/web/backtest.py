@@ -183,6 +183,44 @@ def show_strategy_backtesting():
                     benchmark_comparison.style.format({'Annualized Return': '{:.2%}'}),
                     use_container_width=True
                 )
+
+            # ✨ NEW: Select Strategy for Live Trading
+            st.divider()
+            st.subheader("🚀 Deploy to Live Trading")
+            
+            col_select1, col_select2 = st.columns([2, 1])
+            with col_select1:
+                st.write("Save this strategy configuration to use in **Live Trading** tab.")
+            with col_select2:
+                if st.button("📌 SELECT STRATEGY", type="primary", use_container_width=True):
+                    # Extract weights from backtest results
+                    weights_df = pd.DataFrame()
+                    if hasattr(result, 'final_weights') and result.final_weights is not None and not result.final_weights.empty:
+                        weights_df = result.final_weights.copy()
+                    
+                    # Save strategy to session state
+                    st.session_state.selected_strategy = {
+                        'name': result.strategy_name or 'Backtest Strategy',
+                        'period': f"{result.portfolio_values.index[0].date()} to {result.portfolio_values.index[-1].date()}",
+                        'metrics': {
+                            'total_return': result.metrics.get('total_return', 0) * 100,
+                            'annual_return': result.annualized_return * 100,
+                            'sharpe_ratio': result.metrics.get('sharpe_ratio', 0),
+                            'annual_volatility': result.metrics.get('annual_volatility', 0) * 100,
+                            'max_drawdown': result.metrics.get('max_drawdown', 0) * 100,
+                            'sortino_ratio': result.metrics.get('sortino_ratio', 0),
+                        },
+                        'weights': weights_df,
+                        'selected_at': datetime.now().isoformat()
+                    }
+                    st.success("✅ Strategy selected! Go to **Live Trading** tab to deploy.")
+            
+            # Show if strategy is selected
+            if 'selected_strategy' in st.session_state and st.session_state.selected_strategy:
+                st.info(
+                    f"✓ **{st.session_state.selected_strategy['name']}** "
+                    f"selected at {st.session_state.selected_strategy['selected_at'][:10]}"
+                )
         else:
             st.info("👈 Configure parameters and click **Run Backtest** to see results")
 
@@ -240,6 +278,23 @@ def run_backtest_demo(strategy_type: str, start_date, end_date, initial_capital:
         )
         engine = BacktestEngine(config)
         result = engine.run_backtest(f'{strategy_type.upper()} Strategy', price_data, weight_signals)
+
+        # ✨ Add weights to result for Live Trading
+        # Convert weight_signals to format suitable for Live Trading
+        final_weights = weight_signals.iloc[-1] if len(weight_signals) > 0 else pd.Series()
+        if len(final_weights) > 0 and final_weights.sum() > 0:
+            # Create weights dataframe with gvkey (ticker) and weight
+            weights_for_trading = pd.DataFrame({
+                'gvkey': final_weights.index,
+                'weight': final_weights.values
+            })
+            weights_for_trading = weights_for_trading[weights_for_trading['weight'] > 0].copy()
+            weights_for_trading['weight'] = weights_for_trading['weight'] / weights_for_trading['weight'].sum()
+            
+            # Add to result object
+            result.final_weights = weights_for_trading
+        else:
+            result.final_weights = pd.DataFrame()
 
         st.session_state.backtest_result = result
         st.success(f"✅ Backtest completed!")
